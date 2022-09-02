@@ -1,4 +1,5 @@
 import { useReducer } from "react";
+import { Routes, Route, useNavigate } from "react-router-dom";
 import SerchBar from "./components/SearchBar/SerchBar";
 import Gallary from "./components/Gallary/Gallary";
 import Modal from "./components/Modal/Modal";
@@ -30,31 +31,66 @@ const App = () => {
 
   const { searchName, hero } = state;
 
-  const onFormSubmit = (name) =>
+  const navigate = useNavigate();
+
+  const onFormSubmit = (name) => {
     dispatch({ type: "searchName", payload: name });
+    navigate("/gallery");
+  };
 
   const onClick = (hero) => dispatch({ type: "hero", payload: hero });
 
-  const onClose = () => dispatch({ type: "resetHero" });
+  const onClose = () => {
+    dispatch({ type: "resetHero" });
+    navigate("/gallery");
+  };
 
-  if (hero) {
-    const { name, gender, birth_year, hair_color, skin_color } = hero;
-    return (
-      <Modal onClose={onClose}>
-        <span>{name}</span>
-        <span>{gender}</span>
-        <span>{birth_year}</span>
-        <span>{hair_color}</span>
-        <span>{skin_color}</span>
-      </Modal>
-    );
-  }
+  const HeroModal = () => {
+    if (hero) {
+      const { name, gender, birth_year, hair_color, skin_color } = hero;
+
+      return (
+        <Modal onClose={onClose}>
+          <span>{name}</span>
+          <span>{gender}</span>
+          <span>{birth_year}</span>
+          <span>{hair_color}</span>
+          <span>{skin_color}</span>{" "}
+          <button type="button" onClick={() => navigate("/gallery")}>
+            Back to gallery
+          </button>
+        </Modal>
+      );
+    } else {
+      return (
+        <button type="button" onClick={() => navigate("/")}>
+          Back to search
+        </button>
+      );
+    }
+  };
+
   return (
-    <div>
-      <SerchBar onFormSubmit={onFormSubmit} />
-
-      <Gallary searchName={searchName} onClick={onClick} />
-    </div>
+    <Routes>
+      <Route path="/" element={<SerchBar onFormSubmit={onFormSubmit} />} />
+      <Route
+        path="/gallery"
+        element={<Gallary searchName={searchName} onClick={onClick} />}
+      >
+        <Route path="modal" element={<HeroModal />} />
+      </Route>
+      <Route
+        path="*"
+        element={
+          <div>
+            <h2>Page not Found</h2>
+            <button type="button" onClick={() => navigate("/")}>
+              Back to search
+            </button>
+          </div>
+        }
+      />
+    </Routes>
   );
 };
 
